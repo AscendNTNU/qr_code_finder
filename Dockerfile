@@ -1,26 +1,27 @@
-FROM ubuntu:18.04
+FROM ros:kinetic-ros-base
+MAINTAINER Ascend NTNU "www.ascendntnu.no"
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV ROS_WORKSPACE_PATH=/opt/catkin_workspace
+ENV ROS_PACKAGE_NAME=voice_recognition
 
-RUN apt-get update && apt-get install -y locales
-
-RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
-RUN apt-get install -y \
+RUN apt-get update -qq && apt-get install -yqq \
     build-essential \
-    cmake \
-    libopencv-dev
+    ros-kinetic-mavros \
+    ros-kinetic-mavros-extras \
+    ros-kinetic-vision-opencv \
+    ros-kinetic-image-transport \
+    ros-kinetic-tf2
 
-ENV SRC_PATH=/source/qr_recognition
-ENV BUILD_PATH=${SRC_PATH}/dockerbuild
 
-RUN mkdir -p ${BUILD_PATH}
 
-COPY . ${SRC_PATH}
+RUN mkdir -p $ROS_WORKSPACE_PATH/src
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; catkin_init_workspace $ROS_WORKSPACE_PATH/src'
 
-WORKDIR ${BUILD_PATH}
+# Run caktin_make once without building any packages to create the setup.bash
+# RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd $ROS_WORKSPACE_PATH; catkin_make'
 
-RUN cmake .. && make -j
+COPY ./ $ROS_WORKSPACE_PATH/src/$ROS_PACKAGE_NAME/
+WORKDIR $ROS_WORKSPACE_PATH/src
+RUN git clone --depth 1 -b master https://github.com/AscendNTNU/ascend_msgs.git
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd $ROS_WORKSPACE_PATH; catkin_make'
+RUN /bin/bash -c 'echo source $ROS_WORKSPACE_PATH/devel/setup.bash >> /root/.bashrc'
