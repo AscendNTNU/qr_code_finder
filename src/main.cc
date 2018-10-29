@@ -5,7 +5,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-static const std::string OPENCV_WINDOW = "Image window";
 using namespace cv;
 using namespace std;
 
@@ -24,13 +23,6 @@ public:
     image_sub_ = it_.subscribe("/cv_camera/image_raw", 1,
       &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/qr_code_finder/output_video", 1);
-
-    // cv::namedWindow(OPENCV_WINDOW);
-  }
-
-  ~ImageConverter()
-  {
-    // cv::destroyWindow(OPENCV_WINDOW);
   }
 
   // Finds a QR code in the image
@@ -43,52 +35,27 @@ public:
     cv::cvtColor(src, src_gray, CV_BGR2GRAY);
     cv::blur(src_gray, src_gray, Size(3, 3));
 
-    cv::Mat canny_output;
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
+    // Stores convolution results
+    cv::Mat vert;
+    cv::Mat horz;
 
-    // Detect edges using canny
-    cv::Canny(src_gray, canny_output, 255, 255 * 2, 3);
-    // Find contours
-    cv::findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_TC89_KCOS, Point(0, 0));
+    //Initialize kernels
+    float vdata[] = {1,2,1,0,0,0,-1,-2,-1};
+    Mat vkernel(3,3,CV_32F,vdata);
 
-    // Stores weights of contours
-    vector<int> weights;
+    float hdata[] = {1,0,-1,2,0,-2,1,0,-1};
+    Mat hkernel(3,3,CV_32F,hdata);
 
-    // Determine the weighting and store it
-    for (int i = 0; i < contours.size(); i++)
-    {
-        cv::approxPolyDP(contours[i], contours[i], 4, true);
-        int shapeweight = abs((int)(4 - contours[i].size()))+1;
-        shapeweight *= 2; //Weigh shape more
-        int areaweight = (int)cv::contourArea(contours[i]);
-        weights.push_back(areaweight / shapeweight);
-    }
+    cv::filter2D(src_gray, vert, -1, vkernel);
+    cv::filter2D(src_gray, horz, -1, hkernel);
+    
 
-
-    int bestContour = 0;
-    int bestWeight = 0;
-    //Find the highest weighted contour
-    for (int i = 0; i <= weights.size(); i++)
-    {
-        if (weights[i] > bestWeight){
-            bestContour = i;
-            bestWeight = weights[i];
-        }
-    }
-
-    //Draw the contour on the source image
-    Scalar color = Scalar(0, 0, 255);
-    try
-    {
-      cv::drawContours(src, contours, bestContour, color, 2, 8, hierarchy, 0, Point());
-    }
-    catch (cv::Exception e)
-    {
-
-    }
-    // Return marked image
-    return(src);
+    cv::Mat fin;
+    cv::min(vert, horz, fin);
+    cv::threshold(fin, fin, 120,255,THRESH_BINARY);
+    cv::cvtColor(fin, fin, CV_GRAY2BGR);
+    
+    return(fin);
 }
 
   /*
@@ -111,11 +78,7 @@ public:
     // Mark image with most likely QR code
     cv_ptr->image = findQR(cv_ptr->image);
 
-    // Update GUI Window
-    // cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-    // cv::waitKey(3);
-
-    // Output modified video stream
+    // Output modified image
     image_pub_.publish(cv_ptr->toImageMsg());
   }
 };
