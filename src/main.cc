@@ -52,9 +52,19 @@ public:
 
     cv::Mat fin;
     cv::min(vert, horz, fin);
-    cv::threshold(fin, fin, 120,255,THRESH_BINARY);
+
+    cv::threshold(fin, fin, 100,255,THRESH_BINARY);
+    float edata[] = {2,2,2,2,2
+                    ,2,2,2,2,2
+                    ,2,2,4,2,2
+                    ,2,2,2,2,2
+                    ,2,2,2,2,2};
+    Mat ekernel(5,5,CV_32F,edata);
+
+    cv::filter2D(fin, fin, -1, ekernel);
     cv::cvtColor(fin, fin, CV_GRAY2BGR);
-    
+
+
     return(fin);
 }
 
