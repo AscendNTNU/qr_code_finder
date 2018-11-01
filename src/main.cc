@@ -19,10 +19,20 @@ public:
   ImageConverter()
     : it_(nh_)
   {
-    // Subscribe to input video feed and publish output video feed
+    // Subscribe to input video feed and advertise output video feed
     image_sub_ = it_.subscribe("/cv_camera/image_raw", 1,
       &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/qr_code_finder/output_video", 1);
+  }
+
+  // Find center from array of points
+  Point getCenter(InputArray Points)
+  {
+    Point centerCoord;
+    Moments mom = moments(Points);
+    centerCoord.x = int(mom.m10 / mom.m00);
+    centerCoord.y = int(mom.m01 / mom.m00);
+    return centerCoord;
   }
 
   // Finds a QR code in the image
@@ -35,34 +45,20 @@ public:
     cv::cvtColor(src, src_gray, CV_BGR2GRAY);
     cv::blur(src_gray, src_gray, Size(3, 3));
 
-    // Stores convolution results
-    cv::Mat vert;
-    cv::Mat horz;
-
-    //Initialize kernels
-    float vdata[] = {1,2,1,0,0,0,-1,-2,-1};
-    Mat vkernel(3,3,CV_32F,vdata);
-
-    float hdata[] = {1,0,-1,2,0,-2,1,0,-1};
-    Mat hkernel(3,3,CV_32F,hdata);
-
-    cv::filter2D(src_gray, vert, -1, vkernel);
-    cv::filter2D(src_gray, horz, -1, hkernel);
+    cv::Mat edges;
+    cv::Canny(src_gray, edges, 100,255);
+    cv::Mat fin = edges;
     
-
-    cv::Mat fin;
-    cv::min(vert, horz, fin);
-
-    cv::threshold(fin, fin, 100,255,THRESH_BINARY);
-    float edata[] = {2,2,2,2,2
-                    ,2,2,2,2,2
-                    ,2,2,4,2,2
-                    ,2,2,2,2,2
-                    ,2,2,2,2,2};
-    Mat ekernel(5,5,CV_32F,edata);
-
-    cv::filter2D(fin, fin, -1, ekernel);
+    vector<Vec4i> lines;
+    cv::HoughLinesP(edges, lines, 1, CV_PI/180,50,50,10);
+    
     cv::cvtColor(fin, fin, CV_GRAY2BGR);
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+      Vec4i l = lines[i];
+      line( fin, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
+    }
+    // rectangle(fin, qrCenter, qrCenter, Scalar(0,0,255),8);
 
 
     return(fin);
