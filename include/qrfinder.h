@@ -15,6 +15,7 @@ class QRFinder
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
+    cv::Mat lastImage;
 
   public:
     QRFinder();

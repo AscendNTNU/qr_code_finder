@@ -9,6 +9,10 @@ QRFinder::QRFinder() : it_(nh_)
     image_sub_ = it_.subscribe("/cv_camera/image_raw", 1,
                                &QRFinder::imageCb, this);
     image_pub_ = it_.advertise("/qr_code_finder/output_video", 1);
+
+    // Initialize image variable for smoothing of output
+    cv::cvtColor(Mat::zeros(cv::Size(1,1),CV_32F),this->lastImage,CV_GRAY2BGR);
+
 }
 
 /*
@@ -61,22 +65,38 @@ cv::Mat QRFinder::findQR(cv::Mat src)
         Vec4i l = lines[i];
         line(lns, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 255, 255), 5, CV_AA);
     }
-
-
     cv::Canny(lns,lns, 100, 255);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));
-    ROS_INFO("contours: %i", contours.size());
     cv::cvtColor(fin, fin, CV_GRAY2BGR);
+    
+    // Weigh contours to find the screen
+    vector<vector<Point> > screenCandidates;
+    float biggestArea = 0;
+    int biggestAreaIndex = 0;
     for(int i=0; i< contours.size(); i++)
     {
         cv::approxPolyDP(contours[i], contours[i], 100, true);
         if(contours[i].size() == 4)
         {
-            cv::drawContours(fin,contours,i,cv::Scalar(255,255,255),2,8,hierarchy,0,Point(0,0));
+            screenCandidates.push_back(contours[i]);
+            if((float)cv::contourArea(contours[i]) > biggestArea)
+            {
+                biggestArea = (float)cv::contourArea(contours[i]);
+                biggestAreaIndex = i;
+            }
         }
     }
 
-    return (fin);
+    // Only display if a square is found
+    if (biggestArea != 0)
+    {
+        // cv::drawContours(fin,contours,biggestAreaIndex,cv::Scalar(255,255,255),2,8,hierarchy,0,Point(0,0));
+        Rect boundR = cv::boundingRect(cv::Mat(contours[biggestAreaIndex]));
+        cv::Mat croppedImage = src(boundR);
+        return(croppedImage);
+    }
+
+    return(this->lastImage);
 }
