@@ -2,12 +2,6 @@
 
 using namespace cv;
 using namespace std;
-
-
-/*
-Callback when receiving image
-Republishes image with most likely QR marked
-*/
   
 int main(int argc, char **argv)
 {
