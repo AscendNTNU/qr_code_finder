@@ -5,7 +5,7 @@ Reads images from
 
 `` /cv_camera/image_raw``
 
-Publishes images with the most likely QR code marked on 
+Publishes images cropped to the most likely QR code on 
 
-`` /qr_code_finder/output_video ``
+`` /qr_code_finder/output_image ``
 

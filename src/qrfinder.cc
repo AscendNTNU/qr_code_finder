@@ -8,7 +8,7 @@ QRFinder::QRFinder() : it_(nh_)
     // Subscribe to input video feed and advertise output video feed
     image_sub_ = it_.subscribe("/cv_camera/image_raw", 1,
                                &QRFinder::imageCb, this);
-    image_pub_ = it_.advertise("/qr_code_finder/output_video", 1);
+    image_pub_ = it_.advertise("/qr_code_finder/output_image", 1);
 
     // Initialize image variable for smoothing of output
     cv::cvtColor(Mat::zeros(cv::Size(1,1),CV_32F),this->lastImage,CV_GRAY2BGR);
@@ -89,14 +89,14 @@ cv::Mat QRFinder::findQR(cv::Mat src)
         }
     }
 
-    // Only display if a square is found
+    // Update current publish image if a new candidate is found
     if (biggestArea != 0)
     {
-        // cv::drawContours(fin,contours,biggestAreaIndex,cv::Scalar(255,255,255),2,8,hierarchy,0,Point(0,0));
         Rect boundR = cv::boundingRect(cv::Mat(contours[biggestAreaIndex]));
         cv::Mat croppedImage = src(boundR);
-        return(croppedImage);
+        this->lastImage = croppedImage;
     }
 
+    // Return current candidate
     return(this->lastImage);
 }
