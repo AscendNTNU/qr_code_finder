@@ -1,0 +1,10 @@
+<!-- 
+    Launches both camera node and QR code finder
+    Publishes raw image to bottomcamera/image_raw
+    Publishees QR code to qr_code_finder/output_image
+ -->
+
+<launch>
+<node name="bottomcamera" pkg="cv_camera" type="cv_camera_node" />
+<node name="qrfinder" pkg="qr_code_finder" type="qr_code_finder" />
+</launch>

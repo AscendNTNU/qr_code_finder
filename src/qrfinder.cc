@@ -6,7 +6,7 @@ using namespace std;
 QRFinder::QRFinder() : it_(nh_)
 {
     // Subscribe to input video feed and advertise output video feed
-    image_sub_ = it_.subscribe("/cv_camera/image_raw", 1,
+    image_sub_ = it_.subscribe("/bottomcamera/image_raw", 1,
                                &QRFinder::imageCb, this);
     image_pub_ = it_.advertise("/qr_code_finder/output_image", 1);
 
