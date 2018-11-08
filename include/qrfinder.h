@@ -16,6 +16,7 @@ class QRFinder
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
     cv::Mat lastImage;
+    float lastScore;
 
   public:
     QRFinder();

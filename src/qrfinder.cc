@@ -10,9 +10,9 @@ QRFinder::QRFinder() : it_(nh_)
                                &QRFinder::imageCb, this);
     image_pub_ = it_.advertise("/qr_code_finder/output_image", 1);
 
-    // Initialize image variable for smoothing of output
+    // Initialize image variables for smoothing of output
     cv::cvtColor(Mat::zeros(cv::Size(1,1),CV_32F),this->lastImage,CV_GRAY2BGR);
-
+    this->lastScore = 0;
 }
 
 /*
@@ -71,7 +71,7 @@ cv::Mat QRFinder::findQR(cv::Mat src)
     cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));
     cv::cvtColor(fin, fin, CV_GRAY2BGR);
     
-    // Weigh contours to find the screen
+    // Weigh contours to find screen candidates
     vector<vector<Point> > screenCandidates;
     float biggestArea = 0;
     int biggestAreaIndex = 0;
@@ -92,9 +92,22 @@ cv::Mat QRFinder::findQR(cv::Mat src)
     // Update current publish image if a new candidate is found
     if (biggestArea != 0)
     {
+        // Crop source image to candidate bounds
         Rect boundR = cv::boundingRect(cv::Mat(contours[biggestAreaIndex]));
         cv::Mat croppedImage = src(boundR);
-        this->lastImage = croppedImage;
+
+        // Weigh cropped image based on edgyness
+        cv::Mat cEdges = cv::Mat::zeros(croppedImage.size(),croppedImage.type());
+        cv::Canny(croppedImage, cEdges, 100,255);        
+        cv::Scalar eScore = cv::mean(cEdges);
+        float edgeScore = (eScore[0] + eScore[1] + eScore[2] + eScore[3])/4;
+        ROS_INFO("Score: %f", edgeScore);
+        
+        // Only update if score is better than current candidate
+        if (this->lastScore <= edgeScore) {
+            this->lastScore = edgeScore;
+            this->lastImage = croppedImage;
+        }
     }
 
     // Return current candidate
