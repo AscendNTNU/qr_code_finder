@@ -120,6 +120,15 @@ cv::Mat QRFinder::findQR(cv::Mat src)
 
         // Only update if score is better than current candidate
         if (this->lastScore <= totScore) {
+            try {
+            float xFactor = boundR.width / 20;
+            boundR -= cv::Point(xFactor, xFactor);
+            boundR += cv::Size(2 * xFactor, 2* xFactor);
+            croppedImage = src(boundR);
+        } catch (Exception e){
+            ROS_WARN("Could not expand image");
+        }
+
             this->lastScore = totScore;
             this->lastImage = croppedImage;
             ROS_INFO("New best weight: %f", totScore);
