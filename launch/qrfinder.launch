@@ -1,0 +1,4 @@
+<launch>
+<node name="bottomcamera" pkg="cv_camera" type="cv_camera_node" />
+<node name="qrfinder" pkg="qr_code_finder" type="qr_code_finder" />
+</launch>

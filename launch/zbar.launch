@@ -1,0 +1,14 @@
+<!--
+REQUIRES ZBAR PACKAGE
+https://github.com/ros-drivers/zbar_ros
+ -->
+
+<launch>
+<node name="topicrelay" pkg="topic_tools" type="relay" args=" /qr_code_finder/output_image /image" />
+
+<node pkg="nodelet" type="nodelet" name="zbar_manager"  args="manager"/>
+<node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader">
+    <param name="throttle_repeated_barcodes" type="double" value="2.0"/>
+</node>
+  
+</launch>
