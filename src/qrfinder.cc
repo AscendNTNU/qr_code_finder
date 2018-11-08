@@ -98,15 +98,31 @@ cv::Mat QRFinder::findQR(cv::Mat src)
 
         // Weigh cropped image based on edgyness
         cv::Mat cEdges = cv::Mat::zeros(croppedImage.size(),croppedImage.type());
-        cv::Canny(croppedImage, cEdges, 100,255);        
+        cv::Canny(croppedImage, cEdges, 100,255);
+        cv::Canny(cEdges, cEdges, 100, 255);        
         cv::Scalar eScore = cv::mean(cEdges);
         float edgeScore = (eScore[0] + eScore[1] + eScore[2] + eScore[3])/4;
-        ROS_INFO("Score: %f", edgeScore);
         
+        float squareScore = std::abs(croppedImage.size().height - croppedImage.size().width);
+
+        // Combine weights
+        float totScore = 0;
+        if (squareScore != 0)
+        {
+            totScore = (edgeScore / squareScore) + (edgeScore / 7);
+        }
+
+        // Debug
+        // ROS_INFO("edgeScore: %f",edgeScore);
+        // ROS_INFO("squareScore: %f",squareScore);
+        // ROS_INFO("totScore: %f",totScore);
+
+
         // Only update if score is better than current candidate
-        if (this->lastScore <= edgeScore) {
-            this->lastScore = edgeScore;
+        if (this->lastScore <= totScore) {
+            this->lastScore = totScore;
             this->lastImage = croppedImage;
+            ROS_INFO("New best weight: %f", totScore);
         }
     }
 
