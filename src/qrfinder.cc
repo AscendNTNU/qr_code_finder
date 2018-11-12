@@ -121,7 +121,7 @@ cv::Mat QRFinder::findQR(cv::Mat src)
         // Only update if score is better than current candidate
         if (this->lastScore <= totScore) {
             try {
-            float xFactor = boundR.width / 20;
+            float xFactor = boundR.width / 10;
             boundR -= cv::Point(xFactor, xFactor);
             boundR += cv::Size(2 * xFactor, 2* xFactor);
             croppedImage = src(boundR);
