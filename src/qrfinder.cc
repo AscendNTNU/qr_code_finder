@@ -78,7 +78,7 @@ cv::Mat QRFinder::findQR(cv::Mat src)
     for(int i=0; i< contours.size(); i++)
     {
         cv::approxPolyDP(contours[i], contours[i], 100, true);
-        if(contours[i].size() == 4)
+        if(std::abs(4-contours[i].size()) <= 2)
         {
             screenCandidates.push_back(contours[i]);
             if((float)cv::contourArea(contours[i]) > biggestArea)
@@ -127,6 +127,7 @@ cv::Mat QRFinder::findQR(cv::Mat src)
             croppedImage = src(boundR);
         } catch (Exception e){
             ROS_WARN("Could not expand image");
+            return (this->lastImage);
         }
 
             this->lastScore = totScore;
