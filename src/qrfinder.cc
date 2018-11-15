@@ -45,40 +45,57 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
 cv::Mat QRFinder::findQR(cv::Mat src)
 {
     // Holds the processed image
-    cv::Mat src_gray;
-
+    cv::Mat src_gray, mat_out, edges;
+    cv::Mat blank = cv::Mat::zeros(src.size(),src.type());
     // Convert image to gray and blur it
     cv::cvtColor(src, src_gray, CV_BGR2GRAY);
-    cv::blur(src_gray, src_gray, Size(3, 3));
+    cv::blur(src_gray, src_gray, Size(20, 20));
 
-    // Detect lines in the image
-    cv::Mat edges;
-    cv::Canny(src_gray, edges, 100, 255);
+    cv::adaptiveThreshold(src_gray, src_gray,255,ADAPTIVE_THRESH_GAUSSIAN_C,THRESH_BINARY_INV,11,2);
+    //cv::threshold(src_gray,mat_out,20,255,THRESH_BINARY); 
+
+    // cv::blur(src_gray, src_gray, Size(20, 20));
+    // cv::threshold(src_gray, src_gray,60,255,THRESH_BINARY);
+
+
+
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    // cv::Canny(src_gray, edges, 100, 255);
     vector<Vec4i> lines;
-    cv::HoughLinesP(edges, lines, 1, CV_PI / 180, 50, 50, 10);
+    cv::HoughLinesP(src_gray, lines, 1, CV_PI / 180, 50, 50, 10);
 
     // Draw lines and detect contours
-    cv::Mat fin = Mat::zeros(edges.size(), edges.type());
-    cv::Mat lns = Mat::zeros(edges.size(), edges.type());
+    cv::Mat lns = Mat::zeros(src_gray.size(), src_gray.type());
     for (size_t i = 0; i < lines.size(); i++)
     {
         Vec4i l = lines[i];
-        line(lns, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 255, 255), 5, CV_AA);
+        line(lns, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 255, 255),1, CV_AA);
     }
-    cv::Canny(lns,lns, 100, 255);
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));
-    cv::cvtColor(fin, fin, CV_GRAY2BGR);
+    // cv::Canny(lns,lns, 100, 255);
     
-    // Weigh contours to find screen candidates
+
+    cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));
+    cv::cvtColor(lns, mat_out, CV_GRAY2BGR);
+    
+    // for(int i = 0; i<contours.size();i++)
+    // {
+    //     cv::approxPolyDP(contours[i], contours[i], 80, true);
+    //     if(std::abs(4-contours[i].size()) <= 1)
+    //     {    
+    //         cv::drawContours(mat_out,contours,i,cv::Scalar(0,255,0),5);
+    //     }
+    // }
+    
+
+    // return(mat_out);
     vector<vector<Point> > screenCandidates;
     float biggestArea = 0;
     int biggestAreaIndex = 0;
     for(int i=0; i< contours.size(); i++)
     {
-        cv::approxPolyDP(contours[i], contours[i], 100, true);
-        if(std::abs(4-contours[i].size()) <= 2)
+        cv::approxPolyDP(contours[i], contours[i], 80, true);
+        if(std::abs(4-contours[i].size()) <= 1)
         {
             screenCandidates.push_back(contours[i]);
             if((float)cv::contourArea(contours[i]) > biggestArea)
@@ -95,7 +112,7 @@ cv::Mat QRFinder::findQR(cv::Mat src)
         // Crop source image to candidate bounds
         Rect boundR = cv::boundingRect(cv::Mat(contours[biggestAreaIndex]));
         cv::Mat croppedImage = src(boundR);
-
+        
         // Weigh cropped image based on edgyness
         cv::Mat cEdges = cv::Mat::zeros(croppedImage.size(),croppedImage.type());
         cv::Canny(croppedImage, cEdges, 100,255);
@@ -119,17 +136,23 @@ cv::Mat QRFinder::findQR(cv::Mat src)
 
 
         // Only update if score is better than current candidate
-        if (this->lastScore <= totScore) {
+        if (this->lastScore <= totScore) 
+        {
             try {
-            float xFactor = boundR.width / 10;
-            boundR -= cv::Point(xFactor, xFactor);
-            boundR += cv::Size(2 * xFactor, 2* xFactor);
-            croppedImage = src(boundR);
-        } catch (Exception e){
-            ROS_WARN("Could not expand image");
-            return (this->lastImage);
-        }
+                float xFactor = boundR.width / 10;
+                boundR -= cv::Point(xFactor, xFactor);
+                boundR += cv::Size(2 * xFactor, 2* xFactor);
+                croppedImage = src(boundR);
+            } catch (Exception e){
+                ROS_WARN("Could not expand image");
+                return (this->lastImage);
+            }
 
+
+            cv::cvtColor(croppedImage, croppedImage, CV_BGR2GRAY);
+            cv::blur(croppedImage,croppedImage,Size(2,2));
+            cv::threshold(croppedImage, croppedImage,200,255,THRESH_BINARY);
+            cv::cvtColor(croppedImage, croppedImage, CV_GRAY2BGR);
             this->lastScore = totScore;
             this->lastImage = croppedImage;
             ROS_INFO("New best weight: %f", totScore);
