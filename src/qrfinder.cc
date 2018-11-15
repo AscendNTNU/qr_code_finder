@@ -164,13 +164,13 @@ cv::Mat QRFinder::findQR(cv::Mat src)
                 return (this->lastImage);
             }
 
-
+            cv::Mat croppedBin;
             cv::cvtColor(croppedImage, croppedImage, CV_BGR2GRAY);
-            cv::blur(croppedImage,croppedImage,Size(2,2));
-            cv::threshold(croppedImage, croppedImage,200,255,THRESH_BINARY);
+            cv::blur(croppedImage,croppedBin,Size(2,2));
+            cv::threshold(croppedBin, croppedBin,200,255,THRESH_BINARY);
 
             // Only output images if the QR code is not cropped
-            if (this->checkCleanBorder(croppedImage))
+            if (this->checkCleanBorder(croppedBin))
             {
             cv::cvtColor(croppedImage, croppedImage, CV_GRAY2BGR);
             this->lastScore = totScore;
