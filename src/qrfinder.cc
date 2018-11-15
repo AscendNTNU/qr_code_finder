@@ -22,13 +22,13 @@ QRFinder::QRFinder() : it_(nh_)
 bool QRFinder::checkCleanBorder(cv::Mat binimg)
 {
     // return(true);
-    cv::Mat canvas;
+    cv::Mat mask, fin;
     int borderWidth = 10;
-    cv::Mat mask = cv::Mat::ones(binimg.size(),binimg.type());
-    cv::Rect mrect = cv::Rect(borderWidth, borderWidth, mask.rows - borderWidth, mask.cols - borderWidth);
-    cv::rectangle(mask,mrect,0,-1);
-    binimg.copyTo(canvas,mask);
-    return(cv::countNonZero(canvas) == 0);
+    cv::Mat canvas = cv::Mat::zeros(binimg.size(),binimg.type());
+    cv::copyMakeBorder(canvas,canvas,5,5,5,5,BORDER_CONSTANT,cv::Scalar(255,255,255));
+    cv::resize(canvas,mask,binimg.size());
+    binimg.copyTo(fin,mask);
+    return(cv::countNonZero(fin) == 0);
 }
 
 /*
@@ -88,23 +88,11 @@ cv::Mat QRFinder::findQR(cv::Mat src)
         Vec4i l = lines[i];
         line(lns, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 255, 255),1, CV_AA);
     }
-    // cv::Canny(lns,lns, 100, 255);
     
 
     cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));
     cv::cvtColor(lns, mat_out, CV_GRAY2BGR);
     
-    // for(int i = 0; i<contours.size();i++)
-    // {
-    //     cv::approxPolyDP(contours[i], contours[i], 80, true);
-    //     if(std::abs(4-contours[i].size()) <= 1)
-    //     {    
-    //         cv::drawContours(mat_out,contours,i,cv::Scalar(0,255,0),5);
-    //     }
-    // }
-    
-
-    // return(mat_out);
     vector<vector<Point> > screenCandidates;
     float biggestArea = 0;
     int biggestAreaIndex = 0;
@@ -154,15 +142,15 @@ cv::Mat QRFinder::findQR(cv::Mat src)
         // Only update if score is better than current candidate
         if (this->lastScore <= totScore) 
         {
-            try {
-                float xFactor = boundR.width / 10;
-                boundR -= cv::Point(xFactor, xFactor);
-                boundR += cv::Size(2 * xFactor, 2* xFactor);
-                croppedImage = src(boundR);
-            } catch (Exception e){
-                ROS_WARN("Could not expand image");
-                return (this->lastImage);
-            }
+            // try {
+            //     float xFactor = boundR.width / 10;
+            //     boundR -= cv::Point(xFactor, xFactor);
+            //     boundR += cv::Size(2 * xFactor, 2* xFactor);
+            //     croppedImage = src(boundR);
+            // } catch (Exception e){
+            //     ROS_WARN("Could not expand image");
+            //     return (this->lastImage);
+            // }
 
             cv::Mat croppedBin;
             cv::cvtColor(croppedImage, croppedImage, CV_BGR2GRAY);
