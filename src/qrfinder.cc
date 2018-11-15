@@ -73,10 +73,11 @@ cv::Mat QRFinder::findQR(cv::Mat src)
 
 
     // Find the best contour in the frame
-    vector<Point> candidate = findCandidate(src_gray);
+    vector<Point> candidate;
+    findCandidate(src_gray, candidate);
 
     // Crop source image to candidate bounds
-    Rect boundR = cv::boundingRect(cv::Mat(contours[biggestAreaIndex]));
+    Rect boundR = cv::boundingRect(cv::Mat(candidate));
     cv::Mat croppedImage = src(boundR);
 
     // Calculate QR weight
@@ -97,7 +98,7 @@ cv::Mat QRFinder::findQR(cv::Mat src)
     Finds the largest square-like contour in the image
     This is the contour most likely to contain the QR code
 */
-vector<Point> QRFinder::findCandidate(cv::Mat binary_image)
+void QRFinder::findCandidate(cv::Mat binary_image, vector<Point> &candidate)
 {
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -112,9 +113,7 @@ vector<Point> QRFinder::findCandidate(cv::Mat binary_image)
         line(lns, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255, 255, 255),1, CV_AA);
     }
 
-    cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));
-    cv::cvtColor(lns, mat_out, CV_GRAY2BGR);
-    
+    cv::findContours(lns,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_TC89_KCOS, Point(0,0));    
 
     // No need to check every contour, slows down the processing
     // Check only the biggest contour detected in each frame.
@@ -136,10 +135,10 @@ vector<Point> QRFinder::findCandidate(cv::Mat binary_image)
     }
     if(biggestArea != 0)
     {
-        return(contours[biggestAreaIndex]);
+        candidate = contours[biggestAreaIndex];
     } else {
         // TODO: Figure out better way to deal with this than to return a random contour
-        return(contours[0]);
+        candidate = contours[0];
     }
 }
 

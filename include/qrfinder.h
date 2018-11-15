@@ -27,7 +27,7 @@ class QRFinder
     bool checkCleanBorder(cv::Mat binimg);
     void updateCurrentPublishImage(cv::Mat croppedImage, float score);
     float calculateQRWeight(cv::Mat croppedImage);
-    vector<Point> findCandidate(cv::Mat binary_image);
+    void findCandidate(cv::Mat binary_image, std::vector<cv::Point> &candidate);
 };
 
 #endif //QRFINDER_H_
