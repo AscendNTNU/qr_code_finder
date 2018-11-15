@@ -24,6 +24,7 @@ class QRFinder
     QRFinder();
     cv::Mat findQR(cv::Mat src);
     void imageCb(const sensor_msgs::ImageConstPtr &msg);
+    bool checkCleanBorder(cv::Mat binimg);
 };
 
 #endif //QRFINDER_H_

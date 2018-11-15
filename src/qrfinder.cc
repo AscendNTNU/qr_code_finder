@@ -16,6 +16,22 @@ QRFinder::QRFinder() : it_(nh_)
 }
 
 /*
+    Checks if none of the border pixels are white
+    Used to discard image if QR code is cropped
+*/
+bool QRFinder::checkCleanBorder(cv::Mat binimg)
+{
+    // return(true);
+    cv::Mat canvas;
+    int borderWidth = 10;
+    cv::Mat mask = cv::Mat::ones(binimg.size(),binimg.type());
+    cv::Rect mrect = cv::Rect(borderWidth, borderWidth, mask.rows - borderWidth, mask.cols - borderWidth);
+    cv::rectangle(mask,mrect,0,-1);
+    binimg.copyTo(canvas,mask);
+    return(cv::countNonZero(canvas) == 0);
+}
+
+/*
     Callback for when an image is received
     republishes with most likely QR code marked
 */
@@ -152,10 +168,15 @@ cv::Mat QRFinder::findQR(cv::Mat src)
             cv::cvtColor(croppedImage, croppedImage, CV_BGR2GRAY);
             cv::blur(croppedImage,croppedImage,Size(2,2));
             cv::threshold(croppedImage, croppedImage,200,255,THRESH_BINARY);
+
+            // Only output images if the QR code is not cropped
+            if (this->checkCleanBorder(croppedImage))
+            {
             cv::cvtColor(croppedImage, croppedImage, CV_GRAY2BGR);
             this->lastScore = totScore;
             this->lastImage = croppedImage;
             ROS_INFO("New best weight: %f", totScore);
+            }
         }
     }
 
