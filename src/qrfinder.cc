@@ -3,12 +3,12 @@
 using namespace cv;
 using namespace std;
 
-QRFinder::QRFinder() : it_(nh_)
+QRFinder::QRFinder(std::string itopic, std::string otopic) : it_(nh_)
 {
     // Subscribe to input video feed and advertise output video feed
-    image_sub_ = it_.subscribe("/bottomcamera/image_raw", 1,
+    image_sub_ = it_.subscribe(itopic, 1,
                                &QRFinder::imageCb, this);
-    image_pub_ = it_.advertise("/qr_code_finder/output_image", 1);
+    image_pub_ = it_.advertise(otopic, 1);
 
     // Initialize image variables for conserving output
     cv::cvtColor(Mat::zeros(cv::Size(1,1),CV_32F),this->bestImage,CV_GRAY2BGR);
