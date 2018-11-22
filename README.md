@@ -1,5 +1,5 @@
 ## qr_code_finder
-`` roslaunch launch/qrfinder.launch [inpur_topic] [output_topic]``
+`` roslaunch launch/qrfinder.launch [input_topic] [output_topic]``
 
 Reads images from specified input topic and publishes cropped to the most likely QR code fourth on the specified output topic.
 
