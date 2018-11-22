@@ -17,13 +17,17 @@ class QRFinder
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
-    cv::Mat lastImage;
-    float lastScore;
+    cv::Mat bestImage;
+    float bestWeight;
 
   public:
     QRFinder();
     cv::Mat findQR(cv::Mat src);
     void imageCb(const sensor_msgs::ImageConstPtr &msg);
+    bool checkCleanBorder(cv::Mat binimg);
+    void updateCurrentPublishImage(cv::Mat croppedImage, float score);
+    float calculateQRWeight(cv::Mat croppedImage);
+    void findCandidate(cv::Mat binary_image, std::vector<cv::Point> &candidate);
 };
 
 #endif //QRFINDER_H_
