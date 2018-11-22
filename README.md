@@ -1,8 +1,10 @@
 ## qr_code_finder
-`` roslaunch launch/qrfinder.launch ``
+`` roslaunch launch/qrfinder.launch [input_topic] [output_topic]``
 
-Reads images from ` /cv_camera/image_raw`
-Publishes images cropped to the most likely QR code fourth on ` /qr_code_finder/output_image`
+Reads images from specified input topic and publishes cropped to the most likely QR code fourth on the specified output topic.
+
+Default input: `/bottomcamera/image_raw`
+Default output: `/qr_code_finder/output_image`
 
 
 
