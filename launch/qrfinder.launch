@@ -7,4 +7,7 @@
 <launch>
 <node name="bottomcamera" pkg="cv_camera" type="cv_camera_node"/>
 <node name="qrfinder" pkg="qr_code_finder" type="qr_code_finder" args="/bottomcamera/image_raw qr_code_finder/output_image" />
+<node name="bottom_camera_viz" pkg="image_view" type="image_view" args="image:=/bottomcamera/image_raw" />
+<node name="qr_output_viz" pkg="image_view" type="image_view" args="image:=/qr_code_finder/output_image" />
+
 </launch>
