@@ -44,7 +44,7 @@ const float MEAN_POINT_DISTANCE_MULTIPLIER = 1.4;
 const float ANGLE_MARGIN = 0.01;
 
 // The amount cropped images are allowed to differ from square before the candidate is discarded.
-const float SQUARENESS_MARGIN = 0.2;
+const float SQUARENESS_MARGIN = 0.1;
 
 // Minimum amount of rows and columns required to keep the candidate
 const int MIN_CROP_ROWS = 50;
