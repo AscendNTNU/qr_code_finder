@@ -1,6 +1,6 @@
 /*
     This file should work as is without any editing. 
-    All names are dynamiccaly generated
+    All names are dynamically generated
 */
 
 def getRepoURL() {
