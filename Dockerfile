@@ -2,7 +2,7 @@ FROM ros:kinetic-ros-base
 MAINTAINER Ascend NTNU "www.ascendntnu.no"
 
 ENV ROS_WORKSPACE_PATH=/opt/catkin_workspace
-ENV ROS_PACKAGE_NAME=voice_recognition
+ENV ROS_PACKAGE_NAME=qr_code_finder
 
 RUN apt-get update -qq && apt-get install -yqq \
     build-essential \

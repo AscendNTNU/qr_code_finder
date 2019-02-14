@@ -7,6 +7,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "candidate.h"
 
 #include <cmath>
 
@@ -17,13 +18,13 @@ class QRFinder
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
-    cv::Mat lastImage;
-    float lastScore;
+    cv::Mat bestImage;
 
   public:
-    QRFinder();
-    cv::Mat findQR(cv::Mat src);
+    QRFinder(std::string itopic, std::string otopic);
+    cv::Mat evaluateQR(cv::Mat src);
     void imageCb(const sensor_msgs::ImageConstPtr &msg);
+    void updateCurrentPublishImage(cv::Mat croppedImage);
 };
 
 #endif //QRFINDER_H_
