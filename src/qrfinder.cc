@@ -36,7 +36,7 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
         return;
     }
 
-    std::vector<Candidate> candidates = splitImageIntoCandidates(cv_ptr->image, cv::Size(2,2));
+    std::vector<Candidate> candidates = splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZE);
 
     for(Candidate c : candidates)
     {

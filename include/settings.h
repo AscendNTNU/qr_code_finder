@@ -12,6 +12,11 @@ const bool DRAW_MEAN_POINT = false;
 const bool DRAW_LINES = false;
 const bool DRAW_BOUNDS = false;
 
+/*
+    Image sectioning
+*/
+
+const cv::Size SECTION_GRID_SIZE{2,2};
 
 
 /* 
