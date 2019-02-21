@@ -3,6 +3,7 @@
 #include "evaluation.h"
 #include "debug.h"
 #include "settings.h"
+#include "qr_utilities.h"
 
 using namespace cv;
 using namespace std;
@@ -35,19 +36,55 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
         return;
     }
 
+    std::vector<Candidate> candidates = splitImageIntoCandidates(cv_ptr->image, cv::Size(2,2));
+
+    for(Candidate c : candidates)
+    {
+        Mat result = evaluateQR(c);
+        //if (result != this->bestImage)
+//        Mat resultDiff;
+//        absdiff(result, this->bestImage, resultDiff);
+//        if (sum(resultDiff)[0] > 0)
+        {
+            cv_ptr->image = result;
+            image_pub_.publish(cv_ptr->toImageMsg());
+        }
+    }
     // Mark image with most likely QR code
-    cv_ptr->image = evaluateQR(cv_ptr->image);
+    //cv_ptr->image = evaluateQR(cv_ptr->image);
 
     // Output modified image
-    image_pub_.publish(cv_ptr->toImageMsg());
+    //image_pub_.publish(cv_ptr->toImageMsg());
 }
+
+
+
+std::vector<Candidate> QRFinder::splitImageIntoCandidates(cv::Mat &originalImage, cv::Size gridSize)
+{
+    using namespace std;
+    using namespace cv;
+    vector<Candidate> tempVector;
+
+     cv::Size_<int> boxSize(originalImage.size().width / gridSize.width, originalImage.size().height / gridSize.height);
+//    cv::Size boxSize = originalImage.size() / gridSize;
+    for (int x = 0; x < gridSize.width; x++)
+    {
+        for (int y = 0; y < gridSize.height; y++)
+        {
+           Rect box(Point(boxSize.width * x, boxSize.height * y), boxSize);
+           Candidate boxCandidate(originalImage(box));
+           tempVector.push_back(boxCandidate);
+        }
+    }
+    return tempVector;
+}
+
 
 /*
     Return image with most likely QR code fourth marked
 */
-cv::Mat QRFinder::evaluateQR(cv::Mat src)
+cv::Mat QRFinder::evaluateQR(Candidate qrCandidate)
 {
-    Candidate qrCandidate(src);
 
 
     // Defaut to save images
