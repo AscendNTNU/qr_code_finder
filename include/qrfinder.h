@@ -19,7 +19,8 @@ class QRFinder
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
     cv::Mat bestImage;
-    std::vector<Candidate> splitImageIntoCandidates(cv::Mat &originalImage, cv::Size gridSiz);
+    std::vector<Candidate> splitImageIntoCandidates(cv::Mat &originalImage, cv::Size gridSize);
+    bool gridSizeToggleBool;
 
   public:
     QRFinder(std::string itopic, std::string otopic);

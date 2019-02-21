@@ -3,7 +3,6 @@
 #include "evaluation.h"
 #include "debug.h"
 #include "settings.h"
-#include "qr_utilities.h"
 
 using namespace cv;
 using namespace std;
@@ -14,6 +13,9 @@ QRFinder::QRFinder(std::string itopic, std::string otopic) : it_(nh_)
     image_sub_ = it_.subscribe(itopic, 1,
                                &QRFinder::imageCb, this);
     image_pub_ = it_.advertise(otopic, 1);
+
+    gridSizeToggleBool = true;
+
 
     // Initialize image variables for conserving output
     cv::cvtColor(Mat::zeros(cv::Size(1, 1), CV_32F), this->bestImage, CV_GRAY2BGR);
@@ -36,7 +38,15 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
         return;
     }
 
-    std::vector<Candidate> candidates = splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZE);
+    std::vector<Candidate> candidates; 
+
+    if(gridSizeToggleBool)
+    {
+       candidates = splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZE_1); 
+    } else {
+       candidates = splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZE_2); 
+    }
+    gridSizeToggleBool = !gridSizeToggleBool;
 
     for(Candidate c : candidates)
     {

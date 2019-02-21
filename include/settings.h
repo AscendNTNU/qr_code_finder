@@ -16,7 +16,8 @@ const bool DRAW_BOUNDS = false;
     Image sectioning
 */
 
-const cv::Size SECTION_GRID_SIZE{2,2};
+const cv::Size SECTION_GRID_SIZE_1{3,3};
+const cv::Size SECTION_GRID_SIZE_2{2,2};
 
 
 /* 
