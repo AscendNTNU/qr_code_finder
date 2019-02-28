@@ -19,10 +19,13 @@ class QRFinder
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
     cv::Mat bestImage;
+    std::vector<Candidate> splitImageIntoCandidates(cv::Mat &originalImage, cv::Size gridSize);
+    int grid_size_counter;
+    void evaluateCandidates(std::vector<Candidate> candidates, cv_bridge::CvImagePtr cv_ptr);
 
   public:
     QRFinder(std::string itopic, std::string otopic);
-    cv::Mat evaluateQR(cv::Mat src);
+    cv::Mat evaluateQR(Candidate qrCandidate);
     void imageCb(const sensor_msgs::ImageConstPtr &msg);
     void updateCurrentPublishImage(cv::Mat croppedImage);
 };

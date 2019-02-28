@@ -6,10 +6,8 @@
 
 <launch>
 
-<include file="./camera_publisher1.launch" />
 
 <node name="qrfinder" pkg="qr_code_finder" type="qr_code_finder" args="/data/video1 qr_code_finder/output_image" />
-<node name="bottom_camera_viz" pkg="image_view" type="image_view" args="image:=/data/video1" />
 <node name="qr_output_viz" pkg="image_view" type="image_view" args="image:=/qr_code_finder/output_image" />
 
 </launch>
