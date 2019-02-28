@@ -20,10 +20,13 @@ const bool DRAW_BOUNDS = false;
 // const cv::Size SECTION_GRID_SIZE_2{2,2};
 
 const std::vector<cv::Size> SECTION_GRID_SIZES{
-    cv::Size{1,1},
+    // cv::Size{1,1},
     cv::Size{2,2},
     cv::Size{3,3},
-    cv::Size{4,4}
+    cv::Size{4,3},
+    cv::Size{4,2},
+    cv::Size{5,3},
+    cv::Size{8,4},
 };
 
 
