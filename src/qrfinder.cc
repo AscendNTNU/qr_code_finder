@@ -37,21 +37,63 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
         return;
     }
 
-    cv::Mat sectioned_image, rect_sect_image, gray_sect;
-    cv::inRange(cv_ptr->image, cv::Scalar(200,200,200), cv::Scalar(255,255,255), sectioned_image);
+    cv::Mat sectioned_image, rect_sect_image, edge_sect;
+    //cv::cvtColor(cv_ptr->image, sectioned_image, CV_BGR2GRAY);
+    cv::inRange(cv_ptr->image, cv::Scalar(230,230,230), cv::Scalar(255,255,255), sectioned_image);
 
 
-    cv::cvtColor(sectioned_image, rect_sect_image, CV_GRAY2BGR);
+    //cv::cvtColor(sectioned_image, rect_sect_image, CV_GRAY2BGR);
 
-    cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(); 
-    std::vector<cv::KeyPoint> kPoints;
-    detector->detect(sectioned_image, kPoints);
+    //cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(); 
+    //std::vector<cv::KeyPoint> kPoints;
+    //detector->detect(sectioned_image, kPoints);
     
-    cv::drawKeypoints(rect_sect_image, kPoints, cv_ptr->image,cv::Scalar(0,0,255),DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    //cv::drawKeypoints(rect_sect_image, kPoints, cv_ptr->image,cv::Scalar(0,0,255),DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+    // -----------------------
+
+    cv::Mat blurred_image;
+    cv::GaussianBlur(sectioned_image, blurred_image, cv::Size{5,5},0,0);
+
+    cv::Canny(blurred_image, edge_sect, 100,255);
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+
+    cv::findContours(edge_sect, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
+    
+
+    double avg_contour_size = 0;
+    for(std::vector<cv::Point> c : contours)
+    {
+        avg_contour_size += cv::contourArea(c, false);
+    }
+    avg_contour_size /= contours.size();
+
+    //avg_contour_size = std::max(avg_contour_size, 500.0);
+
+    cv::Scalar color = Scalar{0,0,255};
+    std::vector<cv::Rect> b_boxes;
+    for(int i = 0; i < contours.size(); i++)
+    {
+        if (contourArea(contours.at(i)) < avg_contour_size )
+            continue;
+
+        cv::Rect bbox = cv::boundingRect(contours[i]);
+        bbox += bbox.size();
+        bbox -= cv::Point{bbox.x/2, bbox.y/2};
+        b_boxes.push_back(bbox);
+        //cv::drawContours(out_image, contours, i, color);
+        cv::rectangle(cv_ptr->image, b_boxes.back(), color);
+    }
+
+    // -----------------------
 
 
+    //cv::cvtColor(re, rect_sect_image, CV_GRAY2BGR);
+    //cv::inRange(blurred_image, cv::Scalar(230,230,230), cv::Scalar(255,255,255), sectioned_image);
 
-    // cv_ptr->image = rect_sect_image;
+
+    //cv_ptr->image = out_image;
     image_pub_.publish(cv_ptr->toImageMsg());
 
 
