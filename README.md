@@ -13,6 +13,7 @@ Default output: `/qr_code_finder/output_image`
 `` $ ./launch/run_debug.sh ``
 
 Starts a [camera_publisher](https://github.com/AscendNTNU/camera_publisher) node as well as launching the qr finder connected to the correct topics and image visualization.
+The camera_publisher launchfile needs v4l2-ctl to calibrate properly. Install with ``sudo apt install v4l-utils``
 
 
 #### ZBar
