@@ -37,10 +37,29 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
         return;
     }
 
-    for(int i = 0; i < settings::SECTION_GRID_SIZES.size(); i++)
-    {
-        evaluateCandidates(splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZES.at(i)), cv_ptr);
-    }
+    cv::Mat sectioned_image, rect_sect_image, gray_sect;
+    cv::inRange(cv_ptr->image, cv::Scalar(200,200,200), cv::Scalar(255,255,255), sectioned_image);
+
+
+    cv::cvtColor(sectioned_image, rect_sect_image, CV_GRAY2BGR);
+
+    cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(); 
+    std::vector<cv::KeyPoint> kPoints;
+    detector->detect(sectioned_image, kPoints);
+    
+    cv::drawKeypoints(rect_sect_image, kPoints, cv_ptr->image,cv::Scalar(0,0,255),DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+
+
+    // cv_ptr->image = rect_sect_image;
+    image_pub_.publish(cv_ptr->toImageMsg());
+
+
+
+    // for(int i = 0; i < settings::SECTION_GRID_SIZES.size(); i++)
+    // {
+    //     evaluateCandidates(splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZES.at(i)), cv_ptr);
+    // }
 
 }
 
