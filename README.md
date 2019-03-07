@@ -9,6 +9,13 @@ Default output: `/qr_code_finder/output_image`
 
 
 
+#### Camera 
+`` $ ./launch/run_debug.sh ``
+
+Starts a [camera_publisher](https://github.com/AscendNTNU/camera_publisher) node as well as launching the qr finder connected to the correct topics and image visualization.
+The camera_publisher launchfile needs v4l2-ctl to calibrate properly. Install with ``sudo apt install v4l-utils``
+
+
 #### ZBar
 If the [zbar_ros](https://github.com/ros-drivers/zbar_ros) package is installed, `roslaunch launch/zbar.launch` will automatically launch the ZBar reader and publish results to `/barcode`
 
