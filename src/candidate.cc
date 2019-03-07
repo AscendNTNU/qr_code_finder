@@ -202,14 +202,15 @@ Candidate::Candidate(cv::Mat src)
 #endif //DEBUG
         return;
     }
-    if (!filterPoints(allPoints, activePoints, globalMeanPoint))
-    {
-#ifdef DEBUG
-        cout << "filterPoints failed | ";
-#endif //DEBUG
-        return;
-    }
+    //if (!filterPoints(allPoints, activePoints, globalMeanPoint))
+    //{
+//#ifdef DEBUG
+        //cout << "filterPoints failed | ";
+//#endif //DEBUG
+        //return;
+    //}
     // if (!cropImageToPoints(fullFrame, image, activePoints))
+    activePoints = allPoints;
     if (!cropImageToPointsRotated(fullFrame, image, activePoints))
     {
 #ifdef DEBUG
