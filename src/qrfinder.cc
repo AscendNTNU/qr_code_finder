@@ -48,15 +48,18 @@ void QRFinder::evaluateCandidates(std::vector<Candidate> candidates, cv_bridge::
 {
     for (Candidate c : candidates)
     {
+        try{
         Mat result = evaluateQR(c);
         //if (result != this->bestImage)
             //    Mat resultDiff;
             //    absdiff(result, cv_ptr->image, resultDiff);
             //    if (sum(resultDiff)[0] > 0)
-        {
             cv_ptr->image = result;
             image_pub_.publish(cv_ptr->toImageMsg());
-        }
+        }catch(...)
+	{
+
+	}
     }
 }
 
@@ -126,11 +129,17 @@ cv::Mat QRFinder::evaluateQR(Candidate qrCandidate)
     // Update publish image to new cropped image if good
     if (doSave)
     {
-        updateCurrentPublishImage(qrCandidate.image);
+	return qrCandidate.image;
+        //updateCurrentPublishImage(qrCandidate.image);
+    } else
+    {
+	throw -1; // Don't publish anything
+	// This will be caught after call to publish()
     }
 
+    
     // Return current highest weighted candidate
-    return (this->bestImage);
+    //return (this->bestImage);
 }
 
 /*
