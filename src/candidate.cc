@@ -9,14 +9,12 @@ using namespace std;
 bool Candidate::generateCornerPoints(Mat src, vector<Point> &points)
 {
     Mat grayFrame, grayFrameBlurred, cornersFrame, cornersFrameNorm;
-    // Mat blank = Mat::zeros(src.size(), CV_32FC1);
     cv::cvtColor(src, grayFrame, CV_BGR2GRAY);
     cv::blur(grayFrame, grayFrameBlurred, settings::BLUR_KERNEL_SIZE);
     cv::cornerHarris(grayFrameBlurred, cornersFrame, settings::HARRIS_BLOCK_SIZE, settings::HARRIS_KERNEL_SIZE, 0.04, BORDER_DEFAULT);
     cv::normalize(cornersFrame, cornersFrameNorm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
 
     // Collect points
-    Point pSum = Point(0, 0);
     vector<Point> cornerPoints;
     for (int j = 0; j < cornersFrameNorm.rows; j++)
     {
@@ -24,7 +22,7 @@ bool Candidate::generateCornerPoints(Mat src, vector<Point> &points)
         {
             if ((int)cornersFrameNorm.at<float>(j, i) > settings::CORNER_POINT_THRESHOLD)
             {
-                cornerPoints.push_back(Point(i, j));
+                cornerPoints.emplace_back(Point(i, j));
 
                 // Discard image if too many points are found. Most likely unusable
                 // This is inside the loop to avoid a bug that finds thousands of points.
