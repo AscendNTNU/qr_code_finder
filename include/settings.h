@@ -8,7 +8,6 @@ namespace settings
 */
 const bool DRAW_ALL_POINTS = false;
 const bool DRAW_POINTS = false;
-const bool DRAW_MEAN_POINT = false;
 const bool DRAW_LINES = false;
 const bool DRAW_BOUNDS = false;
 
@@ -49,8 +48,6 @@ const int CORNER_POINT_THRESHOLD = 180;
 // The amount of corner points allowed before image is scrapped
 const int MAX_ALLOWED_POINTS = 500;
 
-// Multiplier for getting the maximum allowad distance from the mean point. 
-const float MEAN_POINT_DISTANCE_MULTIPLIER = 1.4;
 
 /* 
     QR validation

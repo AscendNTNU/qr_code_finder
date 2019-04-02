@@ -37,62 +37,6 @@ bool Candidate::generateCornerPoints(Mat src, vector<Point> &points)
     return (true); // SUCCESS
 }
 
-// Get the mean from a list of points
-bool Candidate::generateMeanPoint(std::vector<cv::Point> points, cv::Point &meanPoint)
-{
-    // Don't divide by 0
-    if (points.size() == 0)
-    {
-        cout << "NO CORNERS | ";
-        return (false); //FAIL
-    }
-
-    Point sumPoint;
-    for (Point p : points)
-    {
-        sumPoint += p;
-    }
-    meanPoint = Point(sumPoint.x / points.size(), sumPoint.y / points.size());
-    return (true); // SUCCESS
-}
-
-// Crop image to the bounding box of the points
-bool Candidate::cropImageToPoints(cv::Mat src, cv::Mat &dst, vector<Point> points)
-{
-    try
-    {
-        // Make contour from points and draw bounding box
-        Mat outFrame;
-        vector<Point> contour_poly;
-        approxPolyDP(points, contour_poly, 3, true);
-        Rect boundRect = boundingRect(contour_poly);
-
-        /*
-            SCALES THE BOUNDING BOX UP. NOT IN USE
-            This may be used if the crop turns out to be too small, but feels really hacky
-        */
-        // double scaleFactor = 1.2;
-
-        // int newHeight = static_cast<int>(static_cast<double>(boundRect.height) * scaleFactor);
-        // int newWidth = static_cast<int>(static_cast<double>(boundRect.width) * scaleFactor);
-
-        // int dHeight = newHeight - boundRect.height;
-        // int dWidth = newWidth - boundRect.width;
-
-        // boundRect.height = newHeight;
-        // boundRect.width = newWidth;
-        // boundRect -= Point(dWidth / 2, dHeight / 2);
-
-        dst = src(boundRect);
-        return (true); // SUCCESS
-    }
-    catch (Exception e)
-    {
-        src.copyTo(dst);
-        return (false); // FAIL
-    }
-}
-
 // Crop image to the rotated bounding box of the points
 bool Candidate::cropImageToPointsRotated(cv::Mat src, cv::Mat &dst, vector<Point> points)
 {
@@ -132,91 +76,45 @@ bool Candidate::cropImageToPointsRotated(cv::Mat src, cv::Mat &dst, vector<Point
         cropped.copyTo(dst);
         return (true); // SUCCESS
     }
-    catch (Exception e)
+    catch (...)
     {
         src.copyTo(dst);
         return (false); // FAIL
     }
 }
 
-// Filter away outliers (TODO: This is a really bad way of doing this but sorta works, fix later)
-bool Candidate::filterPoints(std::vector<cv::Point> unfilteredPoints, std::vector<cv::Point> &filteredPoints, cv::Point targetPoint)
-{
-    vector<Point> goodPoints;
-    vector<float> pointDistances;
-    float maxDist = 0;
-
-    // Calculate maximum permitted distance from target point
-    for (Point p : unfilteredPoints)
-    {
-        float dist = ((p.x - targetPoint.x) * (p.x - targetPoint.x) + (p.y - targetPoint.y) * (p.y - targetPoint.y));
-        pointDistances.push_back(dist);
-        maxDist += dist;
-    }
-
-    maxDist /= pointDistances.size();
-    maxDist *= settings::MEAN_POINT_DISTANCE_MULTIPLIER;
-
-    // Only add points closer than the max distance
-    for (int i = 0; i < unfilteredPoints.size(); i++)
-    {
-        if (pointDistances[i] < maxDist)
-        {
-            goodPoints.push_back(unfilteredPoints[i]);
-        }
-    }
-
-    filteredPoints = goodPoints;
-    return (true); // SUCCESS
-}
 
 // QR candidate constructor
 Candidate::Candidate(cv::Mat src)
 {
-    current = false;
+    relevant = false;
 
     if (src.empty())
     {
-        cout << "Empty image | ";
+       ROS_ERROR("Empty image");
         return; // Don't handle empty images
     }
 
     src.copyTo(fullFrame); // Store image in class
+    src.copyTo(image);
 
     /*
         If any of these functions fail, the candidate is useless. 
-        Return is called and current is still set to false.    
+        Return is called and relevant is still set to false.
     */
-    src.copyTo(image);
     if (!generateCornerPoints(fullFrame, allPoints))
     {
 #ifdef DEBUG
-        cout << "generateCornerPoints failed | ";
+       ROS_ERROR("generateCornerPoints failed");
 #endif //DEBUG
         return;
     }
-    if (!generateMeanPoint(allPoints, globalMeanPoint))
+    if (!cropImageToPointsRotated(fullFrame, image, allPoints))
     {
 #ifdef DEBUG
-        cout << "generateMeanPoint failed | ";
+       ROS_ERROR("cropImageToPoints failed");
 #endif //DEBUG
         return;
     }
-    //if (!filterPoints(allPoints, activePoints, globalMeanPoint))
-    //{
-//#ifdef DEBUG
-        //cout << "filterPoints failed | ";
-//#endif //DEBUG
-        //return;
-    //}
-    // if (!cropImageToPoints(fullFrame, image, activePoints))
-    activePoints = allPoints;
-    if (!cropImageToPointsRotated(fullFrame, image, activePoints))
-    {
-#ifdef DEBUG
-        cout << "cropImageToPoints failed | ";
-#endif //DEBUG
-        return;
-    }
-    current = true;
+    relevant = true;
 }

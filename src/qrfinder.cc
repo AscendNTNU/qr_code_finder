@@ -93,22 +93,18 @@ cv::Mat QRFinder::evaluateQR(Candidate qrCandidate)
     // Will be changed to false if the candidate is bad
     bool doSave = true;
 
-    if (!qrCandidate.isCurrent())
+    if (!qrCandidate.isRelevant())
     {
+        doSave = false;
     }
 
-    if (settings::DRAW_MEAN_POINT)
-    {
-        // Draw mean point
-        cv::circle(qrCandidate.image, qrCandidate.globalMeanPoint, 2, Scalar(255, 0, 0), 2);
-    }
 
     // Check for squareness
     if (!checkSquareness(qrCandidate.image))
     {
         doSave = false;
     }
-    else if (!checkImageDetail(qrCandidate.image, qrCandidate.activePoints))
+    else if (!checkImageDetail(qrCandidate.image, qrCandidate.allPoints))
     {
         doSave = false;
     }
