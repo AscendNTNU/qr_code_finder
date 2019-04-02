@@ -102,16 +102,16 @@ Candidate::Candidate(cv::Mat src)
     */
     if (!generateCornerPoints(fullFrame, allPoints))
     {
-#ifdef DEBUG
-       ROS_ERROR("generateCornerPoints failed");
-#endif //DEBUG
+        if(settings::VERBOSE_DEBUG)
+            ROS_ERROR("generateCornerPoints failed");
+
         return;
     }
     if (!cropImageToPointsRotated(fullFrame, image, allPoints))
     {
-#ifdef DEBUG
-       ROS_ERROR("cropImageToPoints failed");
-#endif //DEBUG
+        if(settings::VERBOSE_DEBUG)
+            ROS_ERROR("cropImageToPoints failed");
+
         return;
     }
     relevant = true;

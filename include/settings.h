@@ -8,6 +8,9 @@ namespace settings
 /*
     General
 */
+
+constexpr bool VERBOSE_DEBUG = false;
+
 const bool DRAW_ALL_POINTS = false;
 const bool DRAW_POINTS = false;
 const bool DRAW_LINES = false;
