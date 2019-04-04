@@ -42,7 +42,7 @@ bool Candidate::cropImageToPointsRotated(cv::Mat src, cv::Mat &dst, vector<Point
     {
         cv::RotatedRect bBox = minAreaRect(points);
 
-        if (settings::DRAW_BOUNDS)
+        if (false)
         {
             //DRAW FOR DEBUG
             Point2f vertices[4];
@@ -71,7 +71,12 @@ bool Candidate::cropImageToPointsRotated(cv::Mat src, cv::Mat &dst, vector<Point
         warpAffine(image, rotated, M, image.size(), INTER_CUBIC);
         // crop the resulting image
         getRectSubPix(rotated, rect_size, bBox.center, cropped);
-        cropped.copyTo(dst);
+        if(false)
+        {
+            src.copyTo(dst);
+        }else{
+            cropped.copyTo(dst);
+        }
         return (true); // SUCCESS
     }
     catch (...)

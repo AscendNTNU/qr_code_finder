@@ -90,20 +90,22 @@ cv::Mat QRFinder::evaluateQR(Candidate qrCandidate)
     }
     if (!checkSquareness(qrCandidate.image))
     {
-        doSave = false;
+        //if(!settings::DEBUG_OUTPUT)
+            doSave = false;
     }
-    else if (!checkImageDetail(qrCandidate.image, qrCandidate.allPoints))
+    if (!checkImageDetail(qrCandidate.image, qrCandidate.allPoints))
     {
-        doSave = false;
-    }
-    else
-    {
+        //if(!settings::DEBUG_OUTPUT)
+            doSave = false;
+    } else
+        {
         try
         {
             // Are lines orthogonal to each other?
             if (!checkImageLines(qrCandidate.image))
             {
-                doSave = false;
+                //if(!settings::DEBUG_OUTPUT)
+                    doSave = false;
             }
         }
         catch (...)

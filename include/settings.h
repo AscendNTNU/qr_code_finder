@@ -10,6 +10,7 @@ namespace settings
 */
 
 constexpr bool VERBOSE_DEBUG = false;
+constexpr bool DEBUG_OUTPUT = true;
 
 const bool DRAW_ALL_POINTS = false;
 const bool DRAW_POINTS = false;
