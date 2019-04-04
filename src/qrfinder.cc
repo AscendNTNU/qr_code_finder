@@ -46,7 +46,8 @@ void QRFinder::evaluateCandidates(std::vector<Candidate> candidates, cv_bridge::
         try{
             // This will throw if no usable fourth is found
             Mat result = evaluateQR(c);
-            cv_ptr->image = result;
+            resize(result, cv_ptr->image, cv::Size{settings::OUTPUT_WIDTH_HEIGHT, settings::OUTPUT_WIDTH_HEIGHT});
+            //cv_ptr->image = result;
             image_pub_.publish(cv_ptr->toImageMsg());
         }catch(...)
         {

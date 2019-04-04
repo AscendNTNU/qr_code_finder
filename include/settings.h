@@ -17,6 +17,7 @@ const bool DRAW_POINTS = false;
 const bool DRAW_LINES = false;
 const bool DRAW_BOUNDS = false;
 
+constexpr unsigned int OUTPUT_WIDTH_HEIGHT = 100;
 /*
     Image sectioning
 */
