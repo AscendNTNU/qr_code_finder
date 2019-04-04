@@ -1,17 +1,23 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
+
+
 namespace settings
 {
 /*
     General
 */
+
+constexpr bool VERBOSE_DEBUG = false;
+constexpr bool DEBUG_OUTPUT = true;
+
 const bool DRAW_ALL_POINTS = false;
 const bool DRAW_POINTS = false;
-const bool DRAW_MEAN_POINT = false;
 const bool DRAW_LINES = false;
 const bool DRAW_BOUNDS = false;
 
+constexpr unsigned int OUTPUT_WIDTH_HEIGHT = 100;
 /*
     Image sectioning
 */
@@ -49,15 +55,13 @@ const int CORNER_POINT_THRESHOLD = 180;
 // The amount of corner points allowed before image is scrapped
 const int MAX_ALLOWED_POINTS = 500;
 
-// Multiplier for getting the maximum allowad distance from the mean point. 
-const float MEAN_POINT_DISTANCE_MULTIPLIER = 1.4;
 
 /* 
     QR validation
 */
 
 // The amount lines are allowed to differ from horizontal or vertical before the candidate is discarded.
-const float ANGLE_MARGIN = 0.01;
+const float ANGLE_MARGIN = 0.05;
 
 // The amount cropped images are allowed to differ from square before the candidate is discarded.
 const float SQUARENESS_MARGIN = 0.1;

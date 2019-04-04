@@ -42,25 +42,24 @@ bool checkImageLines(cv::Mat image)
     vector<Vec2f> lines;
     HoughLines(sobelFrameNorm, lines, 1, CV_PI / 180, 40);
 
-    if (lines.size() == 0)
+    if (lines.empty())
     {
-#ifdef DEBUG
-        cerr << "TOO FEW LINES" << endl;
-#endif //DEBUG
+        if(settings::VERBOSE_DEBUG)
+           ROS_DEBUG("NO LINES FOUND");
+
         return false;
     }
-#ifdef DEBUG
-    cout << "NUMBER OF LINES: " << lines.size() << endl;
-#endif //DEBUG
+
+
+    if(settings::VERBOSE_DEBUG)
+        ROS_DEBUG("NUMBER OF LINES: %i", lines.size());
+
     int counted = 0;
     int wrongAngleCount = 0;
     for (Vec2f l : lines)
     {
-        if (l[0] < 20)
-            continue; // Line is too short to use
-#ifdef DEBUG
-        cout << "LINE: " << l[0] << " | " << l[1] << endl;
-#endif //DEBUG
+        if (l[0] < 20) continue; // Line is too short to use
+
         float theta = l[1];
 
         bool lineAngleIsWrong = (abs(0 - theta) > settings::ANGLE_MARGIN) &&

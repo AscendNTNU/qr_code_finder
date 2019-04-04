@@ -13,11 +13,6 @@ QRFinder::QRFinder(std::string itopic, std::string otopic) : it_(nh_)
     image_sub_ = it_.subscribe(itopic, 1,
                                &QRFinder::imageCb, this);
     image_pub_ = it_.advertise(otopic, 1);
-
-    grid_size_counter = 0;
-
-    // Initialize image variables for conserving output
-    cv::cvtColor(Mat::zeros(cv::Size(1, 1), CV_32F), this->bestImage, CV_GRAY2BGR);
 }
 
 /*
@@ -37,32 +32,30 @@ void QRFinder::imageCb(const sensor_msgs::ImageConstPtr &msg)
         return;
     }
 
-    for(int i = 0; i < settings::SECTION_GRID_SIZES.size(); i++)
+    for(const cv::Size &s : settings::SECTION_GRID_SIZES)
     {
-        evaluateCandidates(splitImageIntoCandidates(cv_ptr->image, settings::SECTION_GRID_SIZES.at(i)), cv_ptr);
+        evaluateCandidates(splitImageIntoCandidates(cv_ptr->image, s), cv_ptr);
     }
 
 }
 
 void QRFinder::evaluateCandidates(std::vector<Candidate> candidates, cv_bridge::CvImagePtr cv_ptr)
 {
-    for (Candidate c : candidates)
+    for (const Candidate &c : candidates)
     {
         try{
-        Mat result = evaluateQR(c);
-        //if (result != this->bestImage)
-            //    Mat resultDiff;
-            //    absdiff(result, cv_ptr->image, resultDiff);
-            //    if (sum(resultDiff)[0] > 0)
-            cv_ptr->image = result;
+            // This will throw if no usable fourth is found
+            Mat result = evaluateQR(c);
+            resize(result, cv_ptr->image, cv::Size{settings::OUTPUT_WIDTH_HEIGHT, settings::OUTPUT_WIDTH_HEIGHT});
+            //cv_ptr->image = result;
             image_pub_.publish(cv_ptr->toImageMsg());
         }catch(...)
-	{
-
-	}
+        {
+        }
     }
 }
 
+// Splits image into smaller images in grid pattern
 std::vector<Candidate> QRFinder::splitImageIntoCandidates(cv::Mat &originalImage, cv::Size gridSize)
 {
     using namespace std;
@@ -70,7 +63,6 @@ std::vector<Candidate> QRFinder::splitImageIntoCandidates(cv::Mat &originalImage
     vector<Candidate> tempVector;
 
     cv::Size_<int> boxSize(originalImage.size().width / gridSize.width, originalImage.size().height / gridSize.height);
-    //    cv::Size boxSize = originalImage.size() / gridSize;
     for (int x = 0; x < gridSize.width; x++)
     {
         for (int y = 0; y < gridSize.height; y++)
@@ -84,69 +76,51 @@ std::vector<Candidate> QRFinder::splitImageIntoCandidates(cv::Mat &originalImage
 }
 
 /*
-    Return image with most likely QR code fourth marked
+ * Return image cropped to qr fourth. Throws if nothing is found
 */
 cv::Mat QRFinder::evaluateQR(Candidate qrCandidate)
 {
 
-    // Defaut to save images
+    // Default to save images
     // Will be changed to false if the candidate is bad
     bool doSave = true;
 
-    if (!qrCandidate.isCurrent())
+    if (!qrCandidate.isRelevant())
     {
+        doSave = false;
     }
-
-    if (settings::DRAW_MEAN_POINT)
-    {
-        // Draw mean point
-        cv::circle(qrCandidate.image, qrCandidate.globalMeanPoint, 2, Scalar(255, 0, 0), 2);
-    }
-
-    // Check for squareness
     if (!checkSquareness(qrCandidate.image))
     {
-        doSave = false;
+        //if(!settings::DEBUG_OUTPUT)
+            doSave = false;
     }
-    else if (!checkImageDetail(qrCandidate.image, qrCandidate.activePoints))
+    if (!checkImageDetail(qrCandidate.image, qrCandidate.allPoints))
     {
-        doSave = false;
-    }
-    else
-    {
+        //if(!settings::DEBUG_OUTPUT)
+            doSave = false;
+    } else
+        {
         try
         {
+            // Are lines orthogonal to each other?
             if (!checkImageLines(qrCandidate.image))
             {
-                doSave = false;
+                //if(!settings::DEBUG_OUTPUT)
+                    doSave = false;
             }
         }
-        catch (Exception e)
+        catch (...)
         {
             doSave = false;
         }
     }
-    // Update publish image to new cropped image if good
     if (doSave)
     {
-	return qrCandidate.image;
-        //updateCurrentPublishImage(qrCandidate.image);
+        return qrCandidate.image;
     } else
     {
-	throw -1; // Don't publish anything
-	// This will be caught after call to publish()
+        throw -1; // Don't publish anything
+        // This will be caught after call to publish()
     }
-
-    
-    // Return current highest weighted candidate
-    //return (this->bestImage);
 }
 
-/*
-    To be called when a better QR code candidate is found
-    Replaces the current published image
-*/
-void QRFinder::updateCurrentPublishImage(cv::Mat croppedImage)
-{
-    this->bestImage = croppedImage;
-}
