@@ -60,7 +60,7 @@ const int MAX_ALLOWED_POINTS = 500;
 */
 
 // The amount lines are allowed to differ from horizontal or vertical before the candidate is discarded.
-const float ANGLE_MARGIN = 0.01;
+const float ANGLE_MARGIN = 0.05;
 
 // The amount cropped images are allowed to differ from square before the candidate is discarded.
 const float SQUARENESS_MARGIN = 0.1;
