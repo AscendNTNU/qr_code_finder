@@ -9,7 +9,7 @@
 <include file="./camera_publisher1.launch" />
 
 <node name="qrfinder" pkg="qr_code_finder" type="qr_code_finder" />
-<node name="bottom_camera_viz" pkg="image_view" type="image_view" args="image:=/data/video1" />
-<node name="qr_output_viz" pkg="image_view" type="image_view" args="image:=/qr_parts" />
+<node name="bottom_camera_viz" pkg="image_view" type="image_view" args="image:=drone_1/data/video1" />
+<node name="qr_output_viz" pkg="image_view" type="image_view" args="image:=qr_code_finder/qr_parts" />
 
 </launch>

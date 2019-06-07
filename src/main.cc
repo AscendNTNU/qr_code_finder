@@ -6,7 +6,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
   //string inpath = argv[1];
-  string outpath = "qr_code_finder/output_image";
+  string outpath = "qr_code_finder/qr_parts";
 
   std::array<std::string, 4> inpath {
     "drone_1/data/video1",
