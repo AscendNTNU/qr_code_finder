@@ -7,11 +7,18 @@
 using namespace cv;
 using namespace std;
 
-QRFinder::QRFinder(std::string itopic, std::string otopic) : it_(nh_)
+QRFinder::QRFinder(std::array<std::string, 4> itopic, std::string otopic) : it_(nh_)
 {
     // Subscribe to input video feed and advertise output video feed
-    image_sub_ = it_.subscribe(itopic, 1,
+    image_sub_1 = it_.subscribe(itopic[0], 1,
+                                &QRFinder::imageCb, this);
+    image_sub_2 = it_.subscribe(itopic[1], 1,
+                                &QRFinder::imageCb, this);
+    image_sub_3 = it_.subscribe(itopic[2], 1,
+                                &QRFinder::imageCb, this);
+    image_sub_4 = it_.subscribe(itopic[3], 1,
                                &QRFinder::imageCb, this);
+
     image_pub_ = it_.advertise(otopic, 1);
 }
 

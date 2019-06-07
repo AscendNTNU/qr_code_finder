@@ -16,13 +16,16 @@ class QRFinder
   private:
     ros::NodeHandle nh_;
     image_transport::ImageTransport it_;
-    image_transport::Subscriber image_sub_;
+    image_transport::Subscriber image_sub_1;
+    image_transport::Subscriber image_sub_2;
+    image_transport::Subscriber image_sub_3;
+    image_transport::Subscriber image_sub_4;
     image_transport::Publisher image_pub_;
     std::vector<Candidate> splitImageIntoCandidates(cv::Mat &originalImage, cv::Size gridSize);
     void evaluateCandidates(std::vector<Candidate> candidates, cv_bridge::CvImagePtr cv_ptr);
 
   public:
-    QRFinder(std::string itopic, std::string otopic);
+    QRFinder(std::array<std::string, 4> itopic, std::string otopic);
     cv::Mat evaluateQR(Candidate qrCandidate);
     void imageCb(const sensor_msgs::ImageConstPtr &msg);
 };
