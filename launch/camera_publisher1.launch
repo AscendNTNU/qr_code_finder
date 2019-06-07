@@ -3,7 +3,7 @@
 	<node pkg="camera_publisher" type="camera_publisher_node" name="camera_publisher1" output="screen">
 
 	 <param name="device_name" type="string" value="/dev/video0" />
-	      <param name="topic_name" type="string" value="data/video1" />
+	      <param name="topic_name" type="string" value="drone_1/data/video1" />
 
 	      <param name="camera_width" type="int" value="1920" />
 	      <param name="camera_height" type="int" value="1080" />
